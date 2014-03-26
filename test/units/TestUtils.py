@@ -622,6 +622,27 @@ class TestUtils(unittest.TestCase):
         C.DEFAULT_HASH_BEHAVIOUR = 'merge'
         self.assertEqual(ansible.utils.combine_vars(one, two), merge)
 
+        C.DEFAULT_HASH_BEHAVIOUR = 'interpolate'
+        start   = { 'key': ['one'] }
+        layer1  = { 'key': "{{ parent['key'] | union( ['two', 'three'] ) }}" }
+        layer2  = { 'key': "{{ parent['key'] | intersect( ['two', 'three'] ) }}" }
+        layer3  = { 'key': "{{ parent['key'] | difference( ['two'] ) }}" }
+
+        # The results are not required to be in this order; ideally, our comparison
+        # assertion below would cope with this fact.
+        correct1 = { 'key': ['three', 'two', 'one'] }
+        correct2 = { 'key': ['two', 'three'] }
+        correct3 = { 'key': ['three'] }
+
+        result1 = ansible.utils.combine_vars(start, layer1)
+        self.assertEqual(result1, correct1)
+
+        result2 = ansible.utils.combine_vars(result1, layer2)
+        self.assertEqual(result2, correct2)
+
+        result3 = ansible.utils.combine_vars(result2, layer3)
+        self.assertEqual(result3, correct3)
+
     def test_err(self):
         sys_stderr = sys.stderr
         sys.stderr = StringIO.StringIO()
