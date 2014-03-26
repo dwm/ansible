@@ -230,11 +230,15 @@ of higher precedence wins, it will replace the other value.
 
 Some users prefer that variables that are hashes (aka 'dictionaries' in Python terms) are merged together.  This setting is called 'merge'. This is not the default behavior and it does not affect variables whose values are scalars (integers, strings) or
 arrays.  We generally recommend not using this setting unless you think you have an absolute need for it, and playbooks in the
-official examples repos do not use this setting::
+official examples repos do not use this setting.
+
+New in Ansible 1.6, the new value 'interpolate' allows variables to be optionally redefined in terms of their previous definition. However, while more powerful than either of the existing 'merge' or 'replace options, this new mode of operation potentially breaks backwards-compatibility in that it claims use of the name 'parent' in variable definitions which might already be in use.  As a consequence, it is not currently the default setting.
+
+Further details on how to use the new 'interpolate' mode are available in :doc:`intro_inventory`::
 
     #hash_behaviour=replace
 
-The valid values are either 'replace' (the default) or 'merge'.
+The valid values are either 'replace' (the default), 'merge', or 'interpolate'.
 
 .. _hostfile:
 

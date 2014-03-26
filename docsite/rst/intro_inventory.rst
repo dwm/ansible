@@ -176,6 +176,36 @@ directory will be loaded second.
 Tip: Keeping your inventory file and variables in a git repo (or other version control)
 is an excellent way to track changes to your inventory and host variables.
 
+.. _interpolate_mode:
+
+Interpolate Mode
+++++++++++++++++
+
+In Ansible, it's sometimes desirable to be able to control with fine precision how variables defined in group variable files are overridden by variables defined later on.  New in Ansible 1.6 is an additional 'hash_behaviour' mode, called 'interpolate', which allows you to define variables in terms of their previous definition.
+
+If 'interpolate' mode is enabled, then a new set of variables becomes available for use: 'parent'.  These can only be used in Jinja2 expressions (i.e. those beginning and ending with '{{' and '}}') but will this 'parent' variable will have defined, as a set of nested keys, all of the variables which Ansible has seen up to that point.
+
+For example: Lets say that you have defined a few nested host groups — a top-level 'servers', which contains a group 'production', and you have a group_vars variable for each::
+
+    /etc/ansible/group_vars/servers
+    /etc/ansible/group_vars/production
+
+… and you want to be able to control the set of users who have super-user privileges on this machine.  You might allow 'alex', 'bridget', and 'charlotte' to have root on all of your servers by default, but want to deny 'alex' root access to production machines.  (Perhaps they're new, and you want them to get practice on the development machines first.)
+
+You can achieve this using 'interpolate' mode by using lists and set operators like so::
+
+    ---
+    # group_vars/servers
+    root_users = ['alex', 'bridget', 'charlotte']
+
+    ---
+    # group_vars/production
+    root_users = "{{ parent['root_users'] | difference( ['alex'] ) }}"
+
+This is small example in order to demonstrate the mechanism, but this can save a lot of time in much larger practical examples, where without this feature you have to carefully go through the definition of vars files and update the effective value of each list by hand.
+
+However, care must be taken when using convoluted and overlapping group structures: the definition of the 'parent' group might not be obvious if you're using multiple inheritance, so you may wish to constrain the cicumstances under which you use this pattern so as to avoid unintended consequences.
+
 .. _behavioral_parameters:
 
 List of Behavioral Inventory Parameters
