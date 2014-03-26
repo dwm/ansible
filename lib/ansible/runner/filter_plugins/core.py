@@ -128,19 +128,19 @@ def search(value, pattern='', ignorecase=False):
     return regex(value, pattern, ignorecase, 'search')
 
 def unique(a):
-    return set(a)
+    return list(set(a))
 
 def intersect(a, b):
-    return set(a).intersection(b)
+    return list(set(a).intersection(b))
 
 def difference(a, b):
-    return set(a).difference(b)
+    return list(set(a).difference(b))
 
 def symmetric_difference(a, b):
-    return set(a).symmetric_difference(b)
+    return list(set(a).symmetric_difference(b))
 
 def union(a, b):
-    return set(a).union(b)
+    return list(set(a).union(b))
 
 class FilterModule(object):
     ''' Ansible core jinja2 filters '''
