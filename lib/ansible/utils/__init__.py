@@ -1084,11 +1084,37 @@ def warning(msg):
         warns[new_msg] = 1
 
 def combine_vars(a, b):
+    """
+    Combine two hashes of variable data according to the Ansible
+    policy currently configured.
 
+    a: the existing dictionary of variable data thus far defined.
+    b: a dictionary of newly-loaded variable data to be combined with a.
+
+    returns: a new dictionary of the combined results.
+    """
     if C.DEFAULT_HASH_BEHAVIOUR == "merge":
         return merge_hash(a, b)
-    else:
-        return dict(a.items() + b.items())
+    elif C.DEFAULT_HASH_BEHAVIOUR == "interpolate":
+        # Interpolate b using jinja2 rules, where the previously defined
+        # state of vars is available under the 'parent' namespace.
+        #
+        # This allows users to redefine variables in terms of previous
+        # definitions, for example, using set manipulation to add/remove
+        # elements of interest.
+
+        # Construct a set of input vars which are made up of:
+        # - the data structure provided in b
+        # - the data structure provided in a under 'parent'.
+        inputvars = dict(b.items() + {'parent': a}.items())
+
+        # Evaluate a new 'b'.
+        b = template.template(None, b, inputvars)
+
+        # Fall through to the default case, which is to replace any previous
+        # definitions of a value.
+
+    return dict(a.items() + b.items())
 
 def random_password(length=20, chars=C.DEFAULT_PASSWORD_CHARS):
     '''Return a random password string of length containing only chars.'''
